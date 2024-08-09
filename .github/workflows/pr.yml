@@ -34,11 +34,11 @@ jobs:
           fi
         done
 
-        echo "::set-output name=contains_kind_keyword::$CONTAINS_KIND_KEYWORD"
-        echo "::set-output name=contains_test_keyword::$CONTAINS_TEST_KEYWORD"
+        echo "CONTAINS_KIND_KEYWORD=$CONTAINS_KIND_KEYWORD" >> $GITHUB_ENV
+        echo "CONTAINS_TEST_KEYWORD=$CONTAINS_TEST_KEYWORD" >> $GITHUB_ENV
 
     - name: Fail if required keywords are missing
-      if: steps.kind_check.outputs.contains_kind_keyword == '0' || steps.kind_check.outputs.contains_test_keyword == '0'
+      if: ${{ env.CONTAINS_KIND_KEYWORD == '0' || env.CONTAINS_TEST_KEYWORD == '0' }}      
       run: |
-        echo "Pull request rejected: Please ensure your PR description follows the template, including a valid /kind keyword and either 'TESTED' or 'NOT-TESTED'."
+        echo "Pull request rejected: Please ensure to follow pr template."
         exit 1
