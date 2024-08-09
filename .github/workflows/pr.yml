@@ -1,0 +1,44 @@
+name: PR Description Check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+jobs:
+  check_pr_description:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check for required keywords in /kind
+      id: kind_check
+      run: |
+        KEYWORDS=("new feature" "bug fix" "cleanup" "revert change" "design" "documentation" "enhancement")
+        TEST_KEYWORDS=("TESTED" "NOT-TESTED")
+
+        KIND_LINES=$(echo "${{ github.event.pull_request.body }}" | grep '/kind' | tr '[:upper:]' '[:lower:]')
+
+        CONTAINS_KIND_KEYWORD=0
+        CONTAINS_TEST_KEYWORD=0
+
+        for keyword in "${KEYWORDS[@]}"; do
+          if echo "$KIND_LINES" | grep -q "$keyword"; then
+            CONTAINS_KIND_KEYWORD=1
+            break
+          fi
+        done
+
+        for test_keyword in "${TEST_KEYWORDS[@]}"; do
+          if echo "${{ github.event.pull_request.body }}" | grep -q "$test_keyword"; then
+            CONTAINS_TEST_KEYWORD=1
+            break
+          fi
+        done
+
+        echo "::set-output name=contains_kind_keyword::$CONTAINS_KIND_KEYWORD"
+        echo "::set-output name=contains_test_keyword::$CONTAINS_TEST_KEYWORD"
+
+    - name: Fail if required keywords are missing
+      if: steps.kind_check.outputs.contains_kind_keyword == '0' || steps.kind_check.outputs.contains_test_keyword == '0'
+      run: |
+        echo "Pull request rejected: Please ensure your PR description follows the template, including a valid /kind keyword and either 'TESTED' or 'NOT-TESTED'."
+        exit 1
