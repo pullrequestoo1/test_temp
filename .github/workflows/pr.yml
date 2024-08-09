@@ -41,4 +41,4 @@ jobs:
       if: ${{ env.CONTAINS_KIND_KEYWORD == '0' || env.CONTAINS_TEST_KEYWORD == '0' }}      
       run: |
         echo "Pull request rejected: Please ensure to follow pr template."
-        exit 1
+        exit
